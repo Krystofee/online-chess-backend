@@ -6,12 +6,12 @@ from utils import GetValueEnum
 
 class BasePiece:
     class Type(GetValueEnum):
-        PAWN = 'P'
-        ROOK = 'R'
-        KNIGHT = 'N'
-        BISHOP = 'B'
-        QUEEN = 'Q'
-        KING = 'K'
+        PAWN = "P"
+        ROOK = "R"
+        KNIGHT = "N"
+        BISHOP = "B"
+        QUEEN = "Q"
+        KING = "K"
 
     id: str
     type: Type = None  # set in subclasses
@@ -28,9 +28,9 @@ class BasePiece:
 
     def to_serializable_dict(self):
         return {
-            'id': self.id,
-            'type': self.type.value,
-            'color': self.color.value,
-            'x': self.x,
-            'y': self.y,
+            "id": self.id,
+            "type": self.type.value,
+            "color": self.color.value,
+            "x": self.x,
+            "y": self.y,
         }

@@ -16,7 +16,7 @@ PORT = 9000
 
 
 def configure_logging():
-    with open('logging_config.yaml', 'r') as f:
+    with open("logging_config.yaml", "r") as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
 
@@ -26,7 +26,7 @@ async def consumer_handler(websocket, path):
     action_receiver = ActionReceiver(websocket, game)
 
     async for message in websocket:
-        logger.info(f'receive {game} {websocket} {path} {message}')
+        logger.info(f"receive {game} {websocket} {path} {message}")
         parsed_message = json.loads(message)
         action_receiver.receive(parsed_message)
 
@@ -38,7 +38,7 @@ async def producer_handler(websocket: WebSocketServerProtocol, path: str):
         await sleep(0.1)
 
         for socket, message in game.message_queue:
-            logger.info(f'sending message {message}')
+            logger.info(f"sending message {message}")
 
             if not socket:
                 for player in game.players.values():
@@ -50,15 +50,12 @@ async def producer_handler(websocket: WebSocketServerProtocol, path: str):
 
 
 async def handler(websocket, path):
-    logger.info(f'connected {websocket} {path}')
+    logger.info(f"connected {websocket} {path}")
 
-    consumer_task = asyncio.ensure_future(
-        consumer_handler(websocket, path))
-    producer_task = asyncio.ensure_future(
-        producer_handler(websocket, path))
+    consumer_task = asyncio.ensure_future(consumer_handler(websocket, path))
+    producer_task = asyncio.ensure_future(producer_handler(websocket, path))
     done, pending = await asyncio.wait(
-        [consumer_task, producer_task],
-        return_when=asyncio.FIRST_COMPLETED,
+        [consumer_task, producer_task], return_when=asyncio.FIRST_COMPLETED
     )
     for task in pending:
         task.cancel()
@@ -66,11 +63,11 @@ async def handler(websocket, path):
     return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     configure_logging()
     logger = logging.getLogger(__name__)
 
-    logger.info('Starting server')
+    logger.info("Starting server")
 
     start_server = websockets.serve(handler, "localhost", PORT)
 

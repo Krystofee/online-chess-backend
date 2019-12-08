@@ -19,9 +19,8 @@ paths = {}
 
 
 class GameState(GetValueEnum):
-    WAITING = 'WAITING'
-    PLAYING = 'PLAYING'
-
+    WAITING = "WAITING"
+    PLAYING = "PLAYING"
 
 
 class ChessGame:
@@ -36,7 +35,7 @@ class ChessGame:
     message_queue: List
 
     def __init__(self):
-        logger.info('init new game')
+        logger.info("init new game")
         self.id = uuid4()
         self.state = GameState.WAITING
         self.players = {}
@@ -89,7 +88,7 @@ class ChessGame:
     def connect(self, websocket: WebSocketServerProtocol, user_id: str):
         if self.connect_player_colors:
             color = self.connect_player_colors.pop()
-            logger.info(f'connect player {websocket} {color}')
+            logger.info(f"connect player {websocket} {color}")
             player = Player(self, user_id, color, websocket)
             self.players[user_id] = player
 
@@ -104,7 +103,9 @@ class ChessGame:
         self.send_state(websocket)
 
     def can_start(self):
-        return len(self.players.values()) == 2 and not any([player.can_start for player in self.players.values()])
+        return len(self.players.values()) == 2 and not any(
+            [player.can_start for player in self.players.values()]
+        )
 
     def start_game(self):
         self.on_move = PlayerColor.WHITE
@@ -119,10 +120,14 @@ class ChessGame:
 
         # TODO: ...still no validation implemented
         if move.takes:
-            self.board = list(filter(
-                lambda piece: not (piece.x == move.takes.x and piece.y == move.takes.y),
-                self.board
-            ))
+            self.board = list(
+                filter(
+                    lambda piece: not (
+                        piece.x == move.takes.x and piece.y == move.takes.y
+                    ),
+                    self.board,
+                )
+            )
 
         for piece in self.board:
             if piece.x == move.move_from.x and piece.y == move.move_from.y:
@@ -140,35 +145,33 @@ class ChessGame:
         self.send_state()
 
     def switch_on_move(self):
-        self.on_move = PlayerColor.WHITE if self.on_move == PlayerColor.BLACK else PlayerColor.BLACK
+        self.on_move = (
+            PlayerColor.WHITE
+            if self.on_move == PlayerColor.BLACK
+            else PlayerColor.BLACK
+        )
 
     def send_state(self, send_to: WebSocketServerProtocol = None):
         self.message_queue.append(
-            (
-                send_to,
-                get_message(
-                    ServerAction.GAME_STATE,
-                    self.to_serializable_dict()
-                )
-            )
+            (send_to, get_message(ServerAction.GAME_STATE, self.to_serializable_dict()))
         )
 
     def to_serializable_dict(self):
         return {
-            'id': str(self.id),
-            'state': self.state.value,
+            "id": str(self.id),
+            "state": self.state.value,
             # 'players': [str(x.id) for x in self.players.values()],
-            'board': [x.to_serializable_dict() for x in self.board],
-            'on_move': self.on_move.value if self.on_move else None,
+            "board": [x.to_serializable_dict() for x in self.board],
+            "on_move": self.on_move.value if self.on_move else None,
         }
 
 
 def get_game(path):
-    logger.info(f'getting game for path {path}')
+    logger.info(f"getting game for path {path}")
 
     if path not in paths:
         paths[path] = ChessGame()
 
-    logger.info(f'game {paths[path]}')
+    logger.info(f"game {paths[path]}")
 
     return paths[path]

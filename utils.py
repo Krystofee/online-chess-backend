@@ -2,7 +2,7 @@ import enum
 import json
 
 
-def get_message(action: 'ServerAction', message: dict):
+def get_message(action: "ServerAction", message: dict):
     return json.dumps([action.value, message])
 
 

@@ -5,23 +5,25 @@ from utils import GetValueEnum, get_message
 
 
 class PlayerState(GetValueEnum):
-    CONNECTED = 'CONNECTED'
-    PLAYING = 'PLAYING'
+    CONNECTED = "CONNECTED"
+    PLAYING = "PLAYING"
 
 
 class PlayerColor(GetValueEnum):
-    WHITE = 'W'
-    BLACK = 'B'
+    WHITE = "W"
+    BLACK = "B"
 
 
 class Player:
-    game: 'ChessGame'
+    game: "ChessGame"
     user_id: str
     socket: WebSocketServerProtocol
     state: PlayerState
     color: PlayerColor
 
-    def __init__(self, game, user_id, color: PlayerColor, socket: WebSocketServerProtocol):
+    def __init__(
+        self, game, user_id, color: PlayerColor, socket: WebSocketServerProtocol
+    ):
         self.game = game
         self.user_id = user_id
         self.socket = socket
@@ -51,10 +53,10 @@ class Player:
                 get_message(
                     ServerAction.PLAYER_STATE,
                     {
-                        'id': str(self.id),
-                        'color': self.color.value,
-                        'state': self.state.value,
-                    }
-                )
+                        "id": str(self.id),
+                        "color": self.color.value,
+                        "state": self.state.value,
+                    },
+                ),
             )
         )
