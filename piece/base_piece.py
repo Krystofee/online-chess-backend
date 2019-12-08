@@ -26,6 +26,9 @@ class BasePiece:
         self.x = x
         self.y = y
 
+    def __eq__(self, other: "BasePiece"):
+        return self.id == other.id
+
     def to_serializable_dict(self):
         return {
             "id": self.id,

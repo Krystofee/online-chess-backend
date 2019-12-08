@@ -8,7 +8,7 @@ from websockets import WebSocketServerProtocol
 from actions import ServerAction
 from piece import Knight, Bishop, Queen, King, Pawn
 from piece.base_piece import BasePiece
-from move import Move
+from received_move import ReceivedMove
 from piece.rook import Rook
 from player import Player, PlayerColor
 from utils import GetValueEnum, get_message
@@ -114,7 +114,7 @@ class ChessGame:
         for player in self.players.values():
             player.set_playing()
 
-    def move(self, websocket: WebSocketServerProtocol, move: Move):
+    def move(self, websocket: WebSocketServerProtocol, move: ReceivedMove):
         if websocket not in [x.socket for x in self.players.values()]:
             return
 
