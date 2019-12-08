@@ -118,9 +118,9 @@ class ChessGame:
         if websocket not in [x.socket for x in self.players.values()]:
             return
 
-        move.perform(self)
+        if move.perform(self):
+            self.switch_on_move()
 
-        self.switch_on_move()
         self.send_state()
 
     def switch_on_move(self):

@@ -1,5 +1,6 @@
-import yaml
 import logging.config
+
+import yaml
 
 if __name__ == "__main__":
     with open("logging_config.yaml", "r") as f:

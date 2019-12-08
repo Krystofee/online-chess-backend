@@ -53,11 +53,14 @@ class PieceMove:
         if "nested" in data and data["nested"]:
             nested = PieceMove.from_dict(data["nested"], game)
 
-        logger.info(f'parsed move {piece} {takes} {data["x"]} {data["y"]} {nested}')
+        logger.info(f'move from dict {piece} {takes} {data["x"]} {data["y"]} {nested}')
 
         return PieceMove(piece, data["x"], data["y"], takes, nested)
 
     def perform(self, game: "ChessGame") -> bool:
+        if not self.is_possible():
+            return False
+
         # TODO: implement validation
         if self.takes:
             game.board = list(
@@ -77,3 +80,6 @@ class PieceMove:
             self.nested.piece.y = self.nested.y
 
         return True
+
+    def is_possible(self):
+        return self in self.piece.get_possible_moves()
