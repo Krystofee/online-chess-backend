@@ -19,7 +19,7 @@ class BasePiece:
     x: int
     y: int
 
-    def __init__(self, game, color, x, y):
+    def __init__(self, game: "ChessGame", color, x, y):
         self.id = str(uuid4())
         self.game = game
         self.color = color
@@ -34,3 +34,6 @@ class BasePiece:
             "x": self.x,
             "y": self.y,
         }
+
+    def get_possible_moves(self):
+        raise NotImplementedError
