@@ -4,26 +4,24 @@ from player import PlayerColor
 from utils import GetValueEnum
 
 
-class PieceType(GetValueEnum):
-    PAWN = 'P'
-    ROOK = 'R'
-    KNIGHT = 'N'
-    BISHOP = 'B'
-    QUEEN = 'Q'
-    KING = 'K'
+class BasePiece:
+    class Type(GetValueEnum):
+        PAWN = 'P'
+        ROOK = 'R'
+        KNIGHT = 'N'
+        BISHOP = 'B'
+        QUEEN = 'Q'
+        KING = 'K'
 
-
-class Piece:
     id: str
-    type: PieceType
+    type: Type = None  # set in subclasses
     color: PlayerColor
     x: int
     y: int
 
-    def __init__(self, game, type, color, x, y):
+    def __init__(self, game, color, x, y):
         self.id = str(uuid4())
         self.game = game
-        self.type = type
         self.color = color
         self.x = x
         self.y = y

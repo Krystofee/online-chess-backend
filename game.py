@@ -6,8 +6,10 @@ from uuid import UUID, uuid4
 from websockets import WebSocketServerProtocol
 
 from actions import ServerAction
-from base_piece import Piece, PieceType
+from piece import Knight, Bishop, Queen, King, Pawn
+from piece.base_piece import BasePiece
 from move import Move
+from piece.rook import Rook
 from player import Player, PlayerColor
 from utils import GetValueEnum, get_message
 
@@ -21,13 +23,14 @@ class GameState(GetValueEnum):
     PLAYING = 'PLAYING'
 
 
+
 class ChessGame:
     id: UUID
     state: GameState
 
     players: Dict[str, Player]
 
-    board: List[Piece]
+    board: List[BasePiece]
     on_move: PlayerColor or None = None
 
     message_queue: List
@@ -40,38 +43,38 @@ class ChessGame:
         self.connect_player_colors = [PlayerColor.WHITE, PlayerColor.BLACK]
         random.shuffle(self.connect_player_colors)
         self.board = [
-            Piece(self, PieceType.ROOK, PlayerColor.BLACK, x=1, y=8),
-            Piece(self, PieceType.KNIGHT, PlayerColor.BLACK, x=2, y=8),
-            Piece(self, PieceType.BISHOP, PlayerColor.BLACK, x=3, y=8),
-            Piece(self, PieceType.QUEEN, PlayerColor.BLACK, x=4, y=8),
-            Piece(self, PieceType.KING, PlayerColor.BLACK, x=5, y=8),
-            Piece(self, PieceType.BISHOP, PlayerColor.BLACK, x=6, y=8),
-            Piece(self, PieceType.KNIGHT, PlayerColor.BLACK, x=7, y=8),
-            Piece(self, PieceType.ROOK, PlayerColor.BLACK, x=8, y=8),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=1, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=2, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=3, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=4, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=5, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=6, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=7, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.BLACK, x=8, y=7),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=1, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=2, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=3, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=4, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=5, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=6, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=7, y=2),
-            Piece(self, PieceType.PAWN, PlayerColor.WHITE, x=8, y=2),
-            Piece(self, PieceType.ROOK, PlayerColor.WHITE, x=1, y=1),
-            Piece(self, PieceType.KNIGHT, PlayerColor.WHITE, x=2, y=1),
-            Piece(self, PieceType.BISHOP, PlayerColor.WHITE, x=3, y=1),
-            Piece(self, PieceType.QUEEN, PlayerColor.WHITE, x=4, y=1),
-            Piece(self, PieceType.KING, PlayerColor.WHITE, x=5, y=1),
-            Piece(self, PieceType.BISHOP, PlayerColor.WHITE, x=6, y=1),
-            Piece(self, PieceType.KNIGHT, PlayerColor.WHITE, x=7, y=1),
-            Piece(self, PieceType.ROOK, PlayerColor.WHITE, x=8, y=1),
+            Rook(self, PlayerColor.BLACK, x=1, y=8),
+            Knight(self, PlayerColor.BLACK, x=2, y=8),
+            Bishop(self, PlayerColor.BLACK, x=3, y=8),
+            Queen(self, PlayerColor.BLACK, x=4, y=8),
+            King(self, PlayerColor.BLACK, x=5, y=8),
+            Bishop(self, PlayerColor.BLACK, x=6, y=8),
+            Knight(self, PlayerColor.BLACK, x=7, y=8),
+            Rook(self, PlayerColor.BLACK, x=8, y=8),
+            Pawn(self, PlayerColor.BLACK, x=1, y=7),
+            Pawn(self, PlayerColor.BLACK, x=2, y=7),
+            Pawn(self, PlayerColor.BLACK, x=3, y=7),
+            Pawn(self, PlayerColor.BLACK, x=4, y=7),
+            Pawn(self, PlayerColor.BLACK, x=5, y=7),
+            Pawn(self, PlayerColor.BLACK, x=6, y=7),
+            Pawn(self, PlayerColor.BLACK, x=7, y=7),
+            Pawn(self, PlayerColor.BLACK, x=8, y=7),
+            Pawn(self, PlayerColor.WHITE, x=1, y=2),
+            Pawn(self, PlayerColor.WHITE, x=2, y=2),
+            Pawn(self, PlayerColor.WHITE, x=3, y=2),
+            Pawn(self, PlayerColor.WHITE, x=4, y=2),
+            Pawn(self, PlayerColor.WHITE, x=5, y=2),
+            Pawn(self, PlayerColor.WHITE, x=6, y=2),
+            Pawn(self, PlayerColor.WHITE, x=7, y=2),
+            Pawn(self, PlayerColor.WHITE, x=8, y=2),
+            Rook(self, PlayerColor.WHITE, x=1, y=1),
+            Knight(self, PlayerColor.WHITE, x=2, y=1),
+            Bishop(self, PlayerColor.WHITE, x=3, y=1),
+            Queen(self, PlayerColor.WHITE, x=4, y=1),
+            King(self, PlayerColor.WHITE, x=5, y=1),
+            Bishop(self, PlayerColor.WHITE, x=6, y=1),
+            Knight(self, PlayerColor.WHITE, x=7, y=1),
+            Rook(self, PlayerColor.WHITE, x=8, y=1),
         ]
         self.message_queue = []
 
