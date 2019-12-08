@@ -30,7 +30,10 @@ class PieceMove:
         self.y = y
 
     def __eq__(self, other: "PieceMove"):
-        return self.to_tuple() == other.to_tuple()
+        return other and self.to_tuple() == other.to_tuple()
+
+    def __repr__(self):
+        return f'"{self.piece}" to [{self.x},{self.y}] takes "{self.takes}"'
 
     def to_tuple(self):
         return self.piece, self.takes, self.x, self.y
@@ -72,8 +75,7 @@ class PieceMove:
                 )
             )
 
-        self.piece.x = self.x
-        self.piece.y = self.y
+        self.piece.move(self.x, self.y)
 
         if self.nested:
             self.nested.piece.x = self.nested.x
