@@ -8,7 +8,7 @@ from websockets import WebSocketServerProtocol
 from actions import ServerAction
 from piece import Knight, Bishop, Queen, King, Pawn
 from piece.base_piece import BasePiece
-from received_move import ReceivedMove
+from piece_move import PieceMove
 from piece.rook import Rook
 from player import Player, PlayerColor
 from utils import GetValueEnum, get_message
@@ -114,32 +114,11 @@ class ChessGame:
         for player in self.players.values():
             player.set_playing()
 
-    def move(self, websocket: WebSocketServerProtocol, move: ReceivedMove):
+    def move(self, websocket: WebSocketServerProtocol, move: PieceMove):
         if websocket not in [x.socket for x in self.players.values()]:
             return
 
-        # TODO: ...still no validation implemented
-        if move.takes:
-            self.board = list(
-                filter(
-                    lambda piece: not (
-                        piece.x == move.takes.x and piece.y == move.takes.y
-                    ),
-                    self.board,
-                )
-            )
-
-        for piece in self.board:
-            if piece.x == move.move_from.x and piece.y == move.move_from.y:
-                piece.x = move.move_to.x
-                piece.y = move.move_to.y
-
-        if move.nested:
-            nested = move.nested
-            for piece in self.board:
-                if piece.x == nested.move_from.x and piece.y == nested.move_from.y:
-                    piece.x = nested.move_to.x
-                    piece.y = nested.move_to.y
+        move.perform(self)
 
         self.switch_on_move()
         self.send_state()
@@ -164,6 +143,16 @@ class ChessGame:
             "board": [x.to_serializable_dict() for x in self.board],
             "on_move": self.on_move.value if self.on_move else None,
         }
+
+    def find_piece_at(self, x, y) -> BasePiece or None:
+        for piece in self.board:
+            if piece.x == x and piece.y == y:
+                return piece
+
+    def find_piece_id(self, id) -> BasePiece or None:
+        for piece in self.board:
+            if piece.id == id:
+                return piece
 
 
 def get_game(path):

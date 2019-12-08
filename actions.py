@@ -1,6 +1,6 @@
 import logging
 
-from received_move import ReceivedMove
+from piece_move import PieceMove
 from utils import GetValueEnum
 
 logger = logging.getLogger(__name__)
@@ -39,5 +39,5 @@ class ActionReceiver:
             self.game.connect(self.websocket, user_id)
 
         if action == ClientAction.MOVE:
-            move = ReceivedMove.from_dict(data)
+            move = PieceMove.from_dict(data, self.game)
             self.game.move(self.websocket, move)

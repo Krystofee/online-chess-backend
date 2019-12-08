@@ -1,11 +1,17 @@
+import yaml
+import logging.config
+
+if __name__ == "__main__":
+    with open("logging_config.yaml", "r") as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+
 import asyncio
 import json
-import logging
-import logging.config
+
 from asyncio import sleep
 
 import websockets
-import yaml
 from websockets import WebSocketServerProtocol
 
 from actions import ActionReceiver
@@ -13,12 +19,6 @@ from game import get_game
 
 PORT = 9000
 # PORT = os.environ['PORT']
-
-
-def configure_logging():
-    with open("logging_config.yaml", "r") as f:
-        config = yaml.safe_load(f.read())
-        logging.config.dictConfig(config)
 
 
 async def consumer_handler(websocket, path):
@@ -64,7 +64,6 @@ async def handler(websocket, path):
 
 
 if __name__ == "__main__":
-    configure_logging()
     logger = logging.getLogger(__name__)
 
     logger.info("Starting server")
