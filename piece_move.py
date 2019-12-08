@@ -78,8 +78,7 @@ class PieceMove:
         self.piece.move(self.x, self.y)
 
         if self.nested:
-            self.nested.piece.x = self.nested.x
-            self.nested.piece.y = self.nested.y
+            self.nested.piece.move(self.nested.x, self.nested.y)
 
         return True
 

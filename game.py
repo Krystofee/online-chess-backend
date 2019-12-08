@@ -15,8 +15,6 @@ from utils import GetValueEnum, get_message
 
 logger = logging.getLogger(__name__)
 
-paths = {}
-
 
 class GameState(GetValueEnum):
     WAITING = "WAITING"
@@ -153,6 +151,9 @@ class ChessGame:
         for piece in self.board:
             if piece.id == id:
                 return piece
+
+
+paths = {}
 
 
 def get_game(path):
