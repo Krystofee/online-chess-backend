@@ -73,7 +73,7 @@ async def handler(websocket, path):
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
-    logger.info("Starting server on port", PORT)
+    logger.info(f"Starting server on port {PORT}")
 
     start_server = websockets.serve(handler, "localhost", PORT)
 
