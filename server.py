@@ -20,7 +20,7 @@ from actions import ActionReceiver
 from game import get_game
 
 # PORT = 9000
-PORT = 3000
+PORT = os.environ.get("PORT")
 
 
 async def consumer_handler(websocket, path):
@@ -73,7 +73,7 @@ async def handler(websocket, path):
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
-    logger.info("Starting server")
+    logger.info("Starting server on port", PORT)
 
     start_server = websockets.serve(handler, "localhost", PORT)
 
