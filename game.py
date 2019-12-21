@@ -78,9 +78,10 @@ class ChessGame:
     def identify(self, websocket: WebSocketServerProtocol, user_id: str):
         player = self.players.get(user_id)
 
+        print("trying to identify", user_id, " found ", player)
+
         if player:
-            player.socket = websocket
-            player.send_state()
+            player.identify(websocket)
             self.send_state()
 
     def connect(self, websocket: WebSocketServerProtocol, user_id: str):
@@ -98,7 +99,14 @@ class ChessGame:
             player = self.players[user_id]
             player.send_state()
 
-        self.send_state(websocket)
+        self.send_state()
+
+    def disconnect(self, websocket: WebSocketServerProtocol):
+        for player_id, player in self.players.items():
+            if player.socket == websocket:
+                player.set_disconnected()
+
+        self.send_state()
 
     def can_start(self):
         return len(self.players.values()) == 2 and not any(
@@ -137,7 +145,6 @@ class ChessGame:
         return {
             "id": str(self.id),
             "state": self.state.value,
-            # 'players': [str(x.id) for x in self.players.values()],
             "board": [x.to_serializable_dict() for x in self.board],
             "on_move": self.on_move.value if self.on_move else None,
         }
@@ -156,10 +163,10 @@ class ChessGame:
 paths = {}
 
 
-def get_game(path):
+def get_game(path, create_new=True) -> ChessGame:
     logger.info(f"getting game for path {path}")
 
-    if path not in paths:
+    if create_new and path not in paths:
         paths[path] = ChessGame()
 
     logger.info(f"game {paths[path]}")

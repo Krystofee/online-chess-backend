@@ -43,7 +43,8 @@ async def producer_handler(websocket: WebSocketServerProtocol, path: str):
 
             if not socket:
                 for player in game.players.values():
-                    await player.socket.send(message)
+                    if player.socket:
+                        await player.socket.send(message)
             else:
                 await socket.send(message)
 
@@ -55,10 +56,14 @@ async def handler(websocket, path):
 
     consumer_task = asyncio.ensure_future(consumer_handler(websocket, path))
     producer_task = asyncio.ensure_future(producer_handler(websocket, path))
+
     done, pending = await asyncio.wait(
         [consumer_task, producer_task], return_when=asyncio.FIRST_COMPLETED
     )
     for task in pending:
+        game = get_game(path, False)
+        if game is not None:
+            game.disconnect(websocket)
         task.cancel()
 
     return None
