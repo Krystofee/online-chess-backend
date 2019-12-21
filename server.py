@@ -73,9 +73,9 @@ async def handler(websocket, path):
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
-    logger.info(f"Starting server on port {PORT}")
+    logger.info(f"Starting server on port 0.0.0.0:{PORT}")
 
-    start_server = websockets.serve(handler, "localhost", PORT)
+    start_server = websockets.serve(handler, "0.0.0.0", PORT)
 
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
