@@ -7,6 +7,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
 
+import os
 import asyncio
 import json
 
@@ -18,8 +19,8 @@ from websockets import WebSocketServerProtocol
 from actions import ActionReceiver
 from game import get_game
 
-PORT = 9000
-# PORT = os.environ['PORT']
+# PORT = 9000
+PORT = os.environ["PORT"]
 
 
 async def consumer_handler(websocket, path):
