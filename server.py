@@ -9,7 +9,6 @@ if __name__ == "__main__":
 
 import os
 import asyncio
-import json
 
 from asyncio import sleep
 
@@ -19,18 +18,14 @@ from websockets import WebSocketServerProtocol
 from actions import ActionReceiver
 from game import get_game
 
-# PORT = 9000
-PORT = os.environ.get("PORT")
+HOST = os.environ.get("WEBSOCKET_HOST", "localhost")
+PORT = os.environ.get("PORT", 9000)
 
 
 async def consumer_handler(websocket, path):
     game = get_game(path)
     action_receiver = ActionReceiver(websocket, game)
-
-    async for message in websocket:
-        logger.info(f"receive {game} {websocket} {path} {message}")
-        parsed_message = json.loads(message)
-        action_receiver.receive(parsed_message)
+    await action_receiver.listen()
 
 
 async def producer_handler(websocket: WebSocketServerProtocol, path: str):
@@ -73,9 +68,9 @@ async def handler(websocket, path):
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
-    logger.info(f"Starting server on port 0.0.0.0:{PORT}")
+    logger.info(f"Starting server on {HOST}:{PORT}")
 
-    start_server = websockets.serve(handler, "0.0.0.0", PORT)
+    start_server = websockets.serve(handler, HOST, PORT)
 
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()

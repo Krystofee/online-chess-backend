@@ -40,9 +40,11 @@ class Player:
     def identify(self, websocket: WebSocketServerProtocol):
         print("player identified", websocket, self.color)
         self.socket = websocket
+        self.state = PlayerState.CONNECTED
         self.send_state()
 
     def set_connected(self):
+        print("Setting player as connected")
         self.state = PlayerState.CONNECTED
         self.send_state()
 

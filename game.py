@@ -6,10 +6,10 @@ from uuid import UUID, uuid4
 from websockets import WebSocketServerProtocol
 
 from actions import ServerAction
-from piece import Knight, Bishop, Queen, King, Pawn
+from piece import Bishop, King, Knight, Pawn, Queen
 from piece.base_piece import BasePiece
-from piece_move import PieceMove
 from piece.rook import Rook
+from piece_move import PieceMove
 from player import Player, PlayerColor
 from utils import GetValueEnum, get_message
 
@@ -83,9 +83,11 @@ class ChessGame:
         if player:
             player.identify(websocket)
             self.send_state()
+        elif self.can_player_join():
+            self.connect(websocket, user_id)
 
     def connect(self, websocket: WebSocketServerProtocol, user_id: str):
-        if self.connect_player_colors:
+        if len(self.connect_player_colors) > 0:
             color = self.connect_player_colors.pop()
             logger.info(f"connect player {websocket} {color}")
             player = Player(self, user_id, color, websocket)
@@ -107,6 +109,9 @@ class ChessGame:
                 player.set_disconnected()
 
         self.send_state()
+
+    def can_player_join(self):
+        return len(self.connect_player_colors) > 0
 
     def can_start(self):
         return len(self.players.values()) == 2 and not any(
@@ -167,7 +172,8 @@ def get_game(path, create_new=True) -> ChessGame:
     logger.info(f"getting game for path {path}")
 
     if create_new and path not in paths:
-        paths[path] = ChessGame()
+        game = ChessGame()
+        paths[path] = game
 
     logger.info(f"game {paths[path]}")
 
