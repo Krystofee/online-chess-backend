@@ -10,6 +10,7 @@ class PlayerState(GetValueEnum):
     CONNECTED = "CONNECTED"
     DISCONNECTED = "DISCONNECTED"
     PLAYING = "PLAYING"
+    ENDED = "ENDED"
 
 
 class PlayerColor(GetValueEnum):

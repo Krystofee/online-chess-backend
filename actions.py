@@ -16,6 +16,7 @@ class ClientAction(GetValueEnum):
 class ServerAction(GetValueEnum):
     PLAYER_STATE = "PLAYER_STATE"
     GAME_STATE = "GAME_STATE"
+    TIMER = "TIMER"
 
 
 class ActionReceiver:

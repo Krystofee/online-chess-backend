@@ -1,11 +1,13 @@
 import logging
 import random
+import time
 from typing import Dict, List
 from uuid import UUID, uuid4
 
 from websockets import WebSocketServerProtocol
 
 from actions import ServerAction
+from game_timer import GameTimer
 from piece import Bishop, King, Knight, Pawn, Queen
 from piece.base_piece import BasePiece
 from piece.rook import Rook
@@ -19,11 +21,19 @@ logger = logging.getLogger(__name__)
 class GameState(GetValueEnum):
     WAITING = "WAITING"
     PLAYING = "PLAYING"
+    ENDED = "ENDED"
 
 
 class ChessGame:
+    TIMER_PERIOD = 1
+
     id: UUID
     state: GameState
+
+    timer: "GameTimer"
+    started_at: float = 0
+    remaining_white: float = 60
+    remaining_black: float = 60
 
     players: Dict[str, Player]
 
@@ -97,6 +107,7 @@ class ChessGame:
                 self.start_game()
             else:
                 player.set_connected()
+
         elif user_id in self.players:
             player = self.players[user_id]
             player.send_state()
@@ -121,9 +132,31 @@ class ChessGame:
     def start_game(self):
         self.on_move = PlayerColor.WHITE
         self.state = GameState.PLAYING
+        self.started_at = time.time()
+        self.timer = GameTimer(self, self.TIMER_PERIOD)
 
         for player in self.players.values():
             player.set_playing()
+
+    def timer_cycle(self):
+        if self.on_move == PlayerColor.WHITE:
+            self.remaining_white -= self.TIMER_PERIOD
+        else:
+            self.remaining_black -= self.TIMER_PERIOD
+
+        self.message_queue.append(
+            (
+                None,
+                get_message(
+                    ServerAction.TIMER,
+                    {
+                        "server_time": time.time(),
+                        "remaining_white": self.remaining_white,
+                        "remaining_black": self.remaining_black,
+                    },
+                ),
+            )
+        )
 
     def move(self, websocket: WebSocketServerProtocol, move: PieceMove):
         if websocket not in [x.socket for x in self.players.values()]:
@@ -152,6 +185,8 @@ class ChessGame:
             "state": self.state.value,
             "board": [x.to_serializable_dict() for x in self.board],
             "on_move": self.on_move.value if self.on_move else None,
+            "remaining_white": self.remaining_white,
+            "remaining_black": self.remaining_black,
         }
 
     def find_piece_at(self, x, y) -> BasePiece or None:
