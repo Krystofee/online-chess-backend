@@ -1,7 +1,7 @@
 import logging
 import random
 import time
-from typing import Dict, List
+from typing import Dict, List, Union
 from uuid import UUID, uuid4
 
 from websockets import WebSocketServerProtocol
@@ -16,6 +16,10 @@ from player import Player, PlayerColor
 from utils import GetValueEnum, get_message
 
 logger = logging.getLogger(__name__)
+
+
+def get_inverse_color(color: PlayerColor):
+    return PlayerColor.WHITE if color == PlayerColor.BLACK else PlayerColor.BLACK
 
 
 class GameState(GetValueEnum):
@@ -33,6 +37,7 @@ class ChessGame:
     started_at: float = 0
     total_length: int = 60 * 5
     per_move: int = 3
+    winner: Union[PlayerColor, None] = None
 
     players: Dict[str, Player]
 
@@ -163,8 +168,10 @@ class ChessGame:
 
         if player_on_move.remaining_time <= 0:
             self.state = GameState.ENDED
-
-        self.send_game_time()
+            self.winner = get_inverse_color(self.on_move)
+            self.send_state()
+        else:
+            self.send_game_time()
 
     def send_game_time(self):
         self.message_queue.append(
@@ -189,6 +196,7 @@ class ChessGame:
             "state": self.state.value,
             "board": [x.to_serializable_dict() for x in self.board],
             "on_move": self.on_move.value if self.on_move else None,
+            "winner": self.winner.value if self.winner else None,
             **self.to_serializable_dict_timer(),
         }
 
