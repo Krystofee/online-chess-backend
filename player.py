@@ -24,6 +24,7 @@ class Player:
     socket: Union[WebSocketServerProtocol, None]
     state: PlayerState
     color: PlayerColor
+    remaining_time: float = 360  # TODO set from actual game length
 
     def __init__(
         self, game, user_id, color: PlayerColor, socket: WebSocketServerProtocol
@@ -73,7 +74,15 @@ class Player:
                             "id": str(self.id),
                             "color": self.color.value,
                             "state": self.state.value,
+                            "remaining_time": self.remaining_time,
                         },
                     ),
                 )
             )
+
+    def get_public_state_dict(self):
+        return {
+            "color": self.color.value,
+            "remaining_time": self.remaining_time,
+            "state": self.state.value,
+        }

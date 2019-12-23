@@ -29,11 +29,8 @@ class ChessGame:
 
     id: UUID
     state: GameState
-
-    timer: "GameTimer"
+    timer: "GameTimer" = None
     started_at: float = 0
-    remaining_white: float = 60
-    remaining_black: float = 60
 
     players: Dict[str, Player]
 
@@ -88,8 +85,6 @@ class ChessGame:
     def identify(self, websocket: WebSocketServerProtocol, user_id: str):
         player = self.players.get(user_id)
 
-        print("trying to identify", user_id, " found ", player)
-
         if player:
             player.identify(websocket)
             self.send_state()
@@ -132,33 +127,14 @@ class ChessGame:
     def start_game(self):
         self.on_move = PlayerColor.WHITE
         self.state = GameState.PLAYING
-        self.started_at = time.time()
-        self.timer = GameTimer(self, self.TIMER_PERIOD)
 
         for player in self.players.values():
             player.set_playing()
 
-    def timer_cycle(self):
-        if self.on_move == PlayerColor.WHITE:
-            self.remaining_white -= self.TIMER_PERIOD
-        else:
-            self.remaining_black -= self.TIMER_PERIOD
-
-        self.message_queue.append(
-            (
-                None,
-                get_message(
-                    ServerAction.TIMER,
-                    {
-                        "server_time": time.time(),
-                        "remaining_white": self.remaining_white,
-                        "remaining_black": self.remaining_black,
-                    },
-                ),
-            )
-        )
-
     def move(self, websocket: WebSocketServerProtocol, move: PieceMove):
+        if not self.timer:
+            self.start_timer()
+
         if websocket not in [x.socket for x in self.players.values()]:
             return
 
@@ -166,6 +142,18 @@ class ChessGame:
             self.switch_on_move()
 
         self.send_state()
+
+    def start_timer(self):
+        self.started_at = time.time()
+        self.timer = GameTimer(self, self.TIMER_PERIOD)
+
+    def timer_cycle(self):
+        player_on_move = self.get_player_by_color(self.on_move)
+        player_on_move.remaining_time -= self.TIMER_PERIOD
+
+        self.message_queue.append(
+            (None, get_message(ServerAction.TIMER, self.to_serializable_dict_timer()))
+        )
 
     def switch_on_move(self):
         self.on_move = (
@@ -185,9 +173,21 @@ class ChessGame:
             "state": self.state.value,
             "board": [x.to_serializable_dict() for x in self.board],
             "on_move": self.on_move.value if self.on_move else None,
-            "remaining_white": self.remaining_white,
-            "remaining_black": self.remaining_black,
+            **self.to_serializable_dict_timer(),
         }
+
+    def to_serializable_dict_timer(self):
+        return {
+            "server_time": time.time(),
+            "players": [
+                player.get_public_state_dict() for player in self.players.values()
+            ],
+        }
+
+    def get_player_by_color(self, color: PlayerColor):
+        for player in self.players.values():
+            if player.color == color:
+                return player
 
     def find_piece_at(self, x, y) -> BasePiece or None:
         for piece in self.board:
