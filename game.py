@@ -31,6 +31,8 @@ class ChessGame:
     state: GameState
     timer: "GameTimer" = None
     started_at: float = 0
+    total_length: int = 60 * 5
+    per_move: int = 3
 
     players: Dict[str, Player]
 
@@ -40,7 +42,6 @@ class ChessGame:
     message_queue: List
 
     def __init__(self):
-        logger.info("init new game")
         self.id = uuid4()
         self.state = GameState.WAITING
         self.players = {}
@@ -82,6 +83,10 @@ class ChessGame:
         ]
         self.message_queue = []
 
+    def set_mode(self, total_length: int, per_move: int):
+        self.total_length = total_length
+        self.per_move = per_move
+
     def identify(self, websocket: WebSocketServerProtocol, user_id: str):
         player = self.players.get(user_id)
 
@@ -95,7 +100,7 @@ class ChessGame:
         if len(self.connect_player_colors) > 0:
             color = self.connect_player_colors.pop()
             logger.info(f"connect player {websocket} {color}")
-            player = Player(self, user_id, color, websocket)
+            player = Player(self, user_id, color, self.total_length, websocket)
             self.players[user_id] = player
 
             if self.can_start():
@@ -132,13 +137,18 @@ class ChessGame:
             player.set_playing()
 
     def move(self, websocket: WebSocketServerProtocol, move: PieceMove):
+        should_add_time = True
         if not self.timer:
+            should_add_time = False
             self.start_timer()
 
         if websocket not in [x.socket for x in self.players.values()]:
             return
 
         if move.perform(self):
+            if should_add_time:
+                player = self.get_player_by_color(self.on_move)
+                player.remaining_time += self.per_move
             self.switch_on_move()
 
         self.send_state()
@@ -151,6 +161,12 @@ class ChessGame:
         player_on_move = self.get_player_by_color(self.on_move)
         player_on_move.remaining_time -= self.TIMER_PERIOD
 
+        if player_on_move.remaining_time <= 0:
+            self.state = GameState.ENDED
+
+        self.send_game_time()
+
+    def send_game_time(self):
         self.message_queue.append(
             (None, get_message(ServerAction.TIMER, self.to_serializable_dict_timer()))
         )

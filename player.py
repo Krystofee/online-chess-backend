@@ -9,8 +9,6 @@ from utils import GetValueEnum, get_message
 class PlayerState(GetValueEnum):
     CONNECTED = "CONNECTED"
     DISCONNECTED = "DISCONNECTED"
-    PLAYING = "PLAYING"
-    ENDED = "ENDED"
 
 
 class PlayerColor(GetValueEnum):
@@ -27,12 +25,18 @@ class Player:
     remaining_time: float = 360  # TODO set from actual game length
 
     def __init__(
-        self, game, user_id, color: PlayerColor, socket: WebSocketServerProtocol
+        self,
+        game,
+        user_id,
+        color: PlayerColor,
+        remaining_time: int,
+        socket: WebSocketServerProtocol,
     ):
         self.game = game
         self.user_id = user_id
         self.socket = socket
         self.color = color
+        self.remaining_time = remaining_time
         self.state = PlayerState.CONNECTED
 
     @property
@@ -46,17 +50,15 @@ class Player:
         self.send_state()
 
     def set_connected(self):
-        print("Setting player as connected")
         self.state = PlayerState.CONNECTED
         self.send_state()
 
     def set_disconnected(self):
         self.state = PlayerState.DISCONNECTED
         self.socket = None
-        print("Disconnected player", self.id, self.color)
 
     def set_playing(self):
-        self.state = PlayerState.PLAYING
+        self.remaining_time = self.game.total_length
         self.send_state()
 
     @property

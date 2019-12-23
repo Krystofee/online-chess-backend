@@ -11,6 +11,7 @@ class ClientAction(GetValueEnum):
     CONNECT = "CONNECT"
     MOVE = "MOVE"
     IDENTIFY = "IDENTIFY"
+    SETTING = "SETTING"
 
 
 class ServerAction(GetValueEnum):
@@ -41,6 +42,11 @@ class ActionReceiver:
         if action == ClientAction.IDENTIFY:
             user_id = data.get("id")
             self.game.identify(self.websocket, user_id)
+
+        if action == ClientAction.SETTING:
+            total_length = int(data.get("total_length", 5))
+            per_move = int(data.get("per_move", 3))
+            self.game.set_mode(total_length, per_move)
 
         if action == ClientAction.CONNECT:
             user_id = data.get("id")
